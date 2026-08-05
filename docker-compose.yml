@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: weatherbench
+      POSTGRES_USER: weatherbench
+      POSTGRES_PASSWORD: weatherbench-local-only
+    volumes:
+      - weatherbench_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weatherbench"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["python", "-m", "alembic", "-c", "apps/api/alembic.ini", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://weatherbench:weatherbench-local-only@db:5432/weatherbench
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DEMO_MODE: "true"
+      DATABASE_URL: postgresql+psycopg://weatherbench:weatherbench-local-only@db:5432/weatherbench
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-change-me-for-local-admin}
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["python", "-m", "app.scheduler.worker"]
+    environment:
+      DEMO_MODE: "true"
+      DATABASE_URL: postgresql+psycopg://weatherbench:weatherbench-local-only@db:5432/weatherbench
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  weatherbench_pg:

@@ -1,0 +1,9 @@
+rain_on_threshold_mmh: 0.1
+rain_off_threshold_mmh: 0.05
+minimum_on_duration_minutes: 10
+minimum_off_duration_minutes: 20
+candidate_step_minutes: 5
+worker_interval_minutes: 10
+source_stale_after_minutes: 30
+ensemble_weight_cap: 0.7
+

@@ -1,0 +1,72 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [126.978, 37.5665, 38]
+  },
+  "properties": {
+    "meta": {
+      "updated_at": "2026-08-03T09:00:00Z",
+      "units": {
+        "air_pressure_at_sea_level": "hPa",
+        "air_temperature": "celsius",
+        "cloud_area_fraction": "%",
+        "precipitation_amount": "mm",
+        "probability_of_precipitation": "%",
+        "relative_humidity": "%",
+        "wind_from_direction": "degrees",
+        "wind_speed": "m/s"
+      }
+    },
+    "timeseries": [
+      {
+        "time": "2026-08-03T10:00:00Z",
+        "data": {
+          "instant": {
+            "details": {
+              "air_pressure_at_sea_level": 1007.2,
+              "air_temperature": 27.2,
+              "cloud_area_fraction": 62.5,
+              "relative_humidity": 71.0,
+              "wind_from_direction": 225.0,
+              "wind_speed": 4.0
+            }
+          },
+          "next_1_hours": {
+            "summary": {
+              "symbol_code": "rainshowers_day"
+            },
+            "details": {
+              "precipitation_amount": 0.4,
+              "probability_of_precipitation": 35.0
+            }
+          },
+          "next_6_hours": {
+            "summary": {
+              "symbol_code": "rain"
+            },
+            "details": {
+              "precipitation_amount": 2.1,
+              "probability_of_precipitation": 70.0
+            }
+          }
+        }
+      },
+      {
+        "time": "2026-08-03T11:00:00Z",
+        "data": {
+          "instant": {
+            "details": {
+              "air_pressure_at_sea_level": 1006.8,
+              "air_temperature": 27.8,
+              "cloud_area_fraction": 74.0,
+              "relative_humidity": 73.0,
+              "wind_from_direction": 240.0,
+              "wind_speed": 3.5
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+version: "2026-08-03.1"
+providers:
+  - provider_id: kma_forecast
+    allow_live_fetch: true
+    allow_display: true
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "기상청 제공"
+    license_confirmation_env: ""
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://www.data.go.kr/data/15084084/openapi.do"
+    notes: "데이터셋별 이용조건 확인 전 저장·평가·내보내기 차단"
+  - provider_id: kma_observation
+    allow_live_fetch: true
+    allow_display: true
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "기상청 제공"
+    license_confirmation_env: ""
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://apihub.kma.go.kr/"
+    notes: "APIHub 개별 데이터셋 정책 확인 필요"
+  - provider_id: kma_nowcast
+    allow_live_fetch: true
+    allow_display: true
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "기상청 레이더/초단기 강수예측 제공"
+    license_confirmation_env: ""
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://apihub.kma.go.kr/"
+    notes: "공식 좌표계와 색상표 검증 전 이미지 수치 추출 차단"
+  - provider_id: met_norway
+    allow_live_fetch: true
+    allow_display: true
+    allow_raw_persistence: true
+    allow_normalized_persistence: true
+    allow_github_export: true
+    allow_benchmark: true
+    max_retention_days: 3650
+    attribution_required: true
+    attribution_text: "Weather data from MET Norway, licensed under CC BY 4.0"
+    license_confirmation_env: ""
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://developer.yr.no/doc/TermsOfService/"
+    notes: "식별 가능한 User-Agent, Expires, Last-Modified, If-Modified-Since 준수"
+  - provider_id: windy_testing
+    allow_live_fetch: true
+    allow_display: true
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "Windy Point Forecast API — 테스트용 변형 데이터"
+    license_confirmation_env: ""
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://api.windy.com/point-forecast/pricing"
+    notes: "Testing 응답은 평가·순위·내보내기에서 강제 제외"
+  - provider_id: windy_professional
+    allow_live_fetch: false
+    allow_display: false
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "Windy Point Forecast API"
+    license_confirmation_env: WINDY_PROFESSIONAL_LICENSE_CONFIRMED
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://api.windy.com/point-forecast/pricing"
+    notes: "별도 계약 정책 파일 확인 전 fail-closed"
+  - provider_id: accuweather
+    allow_live_fetch: false
+    allow_display: false
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "AccuWeather"
+    license_confirmation_env: ACCUWEATHER_SEPARATE_LICENSE_CONFIRMED
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://developer.accuweather.com/documentation/terms-of-use"
+    notes: "별도 계약과 정책 파일 없이는 호출·표시·저장·평가·순위·내보내기 모두 차단"
+  - provider_id: rainviewer
+    allow_live_fetch: true
+    allow_display: true
+    allow_raw_persistence: false
+    allow_normalized_persistence: false
+    allow_github_export: false
+    allow_benchmark: false
+    max_retention_days: 0
+    attribution_required: true
+    attribution_text: "RainViewer — 과거 레이더 보조 레이어"
+    license_confirmation_env: ""
+    policy_checked_at: "2026-08-03"
+    policy_source_url: "https://www.rainviewer.com/api/weather-maps-api.html"
+    notes: "미래 nowcast 공급자로 등록하지 않음"

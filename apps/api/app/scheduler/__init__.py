@@ -1,0 +1,2 @@
+"""Long-running ingestion worker."""
+

@@ -1,0 +1,13 @@
+met_norway:
+  endpoint: https://api.met.no/weatherapi/locationforecast/2.0/compact
+  coordinate_decimals: 4
+  timeout_seconds: 20
+kma:
+  forecast_endpoint: https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+  timezone: Asia/Seoul
+windy:
+  endpoint: https://api.windy.com/api/point-forecast/v2
+  variants: [gfs, icon]
+rainviewer:
+  role: historical_radar_display_only
+

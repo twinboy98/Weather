@@ -1,0 +1,12 @@
+minimum_sample_count: 100
+minimum_positive_events: 20
+minimum_days: 30
+coverage_warning_below: 0.8
+bootstrap_iterations: 1000
+precipitation_thresholds_mmh: [0.1, 1.0, 5.0]
+variable_weights:
+  air_temperature_c: 0.30
+  precipitation_amount_mm: 0.35
+  wind_speed_ms: 0.20
+  relative_humidity_pct: 0.15
+

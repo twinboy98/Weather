@@ -78,18 +78,18 @@ export function RainWindowPanel({ home, work, outbound, inbound }: RainWindowPan
   const recommendedTimes = [outbound.best?.departureAt, inbound.best?.departureAt].filter(Boolean) as string[];
 
   return (
-    <section className="card p-5 sm:p-6" aria-labelledby="rain-window-title">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <section className="card p-4" aria-labelledby="rain-window-title">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="eyebrow">Rain window</p>
-          <h2 className="mt-1 text-2xl font-black tracking-tight" id="rain-window-title">비가 비켜가는 시간</h2>
-          <p className="mt-2 text-sm text-slate-600">{nextRainMessage(homeCells, workCells)}</p>
+          <h2 className="mt-1 text-xl font-black tracking-tight" id="rain-window-title">비가 비켜가는 시간</h2>
+          <p className="mt-1 text-xs text-slate-600">{nextRainMessage(homeCells, workCells)}</p>
         </div>
         <div className="inline-flex self-start rounded-xl bg-slate-100 p-1" aria-label="Rain window 보기 전환">
-          <button aria-pressed={view === "timeline"} className={`rounded-lg px-3 py-2 text-xs font-extrabold ${view === "timeline" ? "bg-white text-emerald-800 shadow-sm" : "text-slate-500"}`} onClick={() => setView("timeline")} type="button">
+          <button aria-pressed={view === "timeline"} className={`rounded-lg px-3 py-1.5 text-xs font-extrabold ${view === "timeline" ? "bg-white text-emerald-800 shadow-sm" : "text-slate-500"}`} onClick={() => setView("timeline")} type="button">
             예보 타임라인
           </button>
-          <button aria-pressed={view === "radar"} className={`rounded-lg px-3 py-2 text-xs font-extrabold ${view === "radar" ? "bg-white text-emerald-800 shadow-sm" : "text-slate-500"}`} onClick={() => setView("radar")} type="button">
+          <button aria-pressed={view === "radar"} className={`rounded-lg px-3 py-1.5 text-xs font-extrabold ${view === "radar" ? "bg-white text-emerald-800 shadow-sm" : "text-slate-500"}`} onClick={() => setView("radar")} type="button">
             현재 레이더
           </button>
         </div>
@@ -97,9 +97,9 @@ export function RainWindowPanel({ home, work, outbound, inbound }: RainWindowPan
 
       {view === "timeline" ? (
         timeline.length ? (
-          <div className="mt-6 overflow-x-auto pb-2">
-            <div className="min-w-[44rem]">
-              <div className="grid grid-cols-[5.5rem_repeat(12,minmax(0,1fr))] items-end gap-1 text-center text-[0.62rem] font-bold text-slate-500">
+          <div className="mt-3 overflow-x-auto pb-1">
+            <div className="min-w-[31rem] sm:min-w-0">
+              <div className="grid grid-cols-[3.75rem_repeat(12,minmax(0,1fr))] items-end gap-1 text-center text-[0.6rem] font-bold text-slate-500">
                 <span className="text-left">KST</span>
                 {timeline.map((cell) => <span key={cell.time}>{kstHour(cell.time)}</span>)}
               </div>
@@ -108,16 +108,17 @@ export function RainWindowPanel({ home, work, outbound, inbound }: RainWindowPan
                 ["이동 중", routeCells],
                 ["회사", workCells],
               ] as const).map(([label, row]) => (
-                <div className="mt-2 grid grid-cols-[5.5rem_repeat(12,minmax(0,1fr))] gap-1" key={label}>
-                  <span className="flex items-center text-xs font-extrabold text-slate-700">{label}</span>
+                <div className="mt-1.5 grid grid-cols-[3.75rem_repeat(12,minmax(0,1fr))] gap-1" key={label}>
+                  <span className="flex items-center text-[0.68rem] font-extrabold text-slate-700">{label}</span>
                   {timeline.map((timelineCell, index) => {
                     const cell = row[index];
                     const isRecommended = recommendedTimes.some((candidate) => Math.abs(new Date(candidate).getTime() - new Date(timelineCell.time).getTime()) < 45 * 60 * 1000);
                     return (
                       <div
                         aria-label={`${label} ${kstHour(timelineCell.time)}, 강수확률 ${cell?.probability === null || cell?.probability === undefined ? "정보 없음" : `${Math.round(cell.probability * 100)}%`}`}
-                        className="relative h-11 rounded-lg border border-white/80"
+                        className="relative h-7 rounded-md border border-white/80"
                         key={timelineCell.time}
+                        role="img"
                         style={{ backgroundColor: color(rainRisk(cell)) }}
                         title={`${label} ${kstHour(timelineCell.time)} · ${cell?.probability === null || cell?.probability === undefined ? "강수확률 정보 없음" : `${Math.round(cell.probability * 100)}%`}`}
                       >
@@ -127,7 +128,7 @@ export function RainWindowPanel({ home, work, outbound, inbound }: RainWindowPan
                   })}
                 </div>
               ))}
-              <div className="mt-4 flex items-center justify-end gap-2 text-[0.65rem] text-slate-500">
+              <div className="mt-3 flex items-center justify-end gap-1.5 text-[0.6rem] text-slate-500">
                 <span>건조</span>
                 {[0, 0.2, 0.4, 0.65, 0.9].map((risk) => <span className="h-3 w-7 rounded" key={risk} style={{ backgroundColor: color(risk) }} />)}
                 <span>강한 비 신호</span>
@@ -136,17 +137,17 @@ export function RainWindowPanel({ home, work, outbound, inbound }: RainWindowPan
             </div>
           </div>
         ) : (
-          <div className="mt-6 rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">날씨를 불러오면 집·이동 경로·회사의 강수 창을 표시합니다.</div>
+          <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">날씨를 불러오면 집·이동 경로·회사의 강수 창을 표시합니다.</div>
         )
       ) : home?.place && work?.place ? (
-        <div className="mt-6">
+        <div className="mt-4">
           <RadarMap
             home={{ label: home.place.address ?? home.place.name, latitude: home.place.latitude, longitude: home.place.longitude }}
             work={{ label: work.place.address ?? work.place.name, latitude: work.place.latitude, longitude: work.place.longitude }}
           />
         </div>
       ) : (
-        <div className="mt-6 rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">집과 회사 위치를 설정하면 경로 주변 레이더를 볼 수 있습니다.</div>
+        <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">집과 회사 위치를 설정하면 경로 주변 레이더를 볼 수 있습니다.</div>
       )}
     </section>
   );

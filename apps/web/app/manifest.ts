@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     : "";
 
   return {
-    name: "날씨길 | Weather Route",
-    short_name: "날씨길",
+    name: "비긋기",
+    short_name: "비긋기",
     description: "집과 회사의 날씨와 이동하기 좋은 시간을 알려주는 개인 날씨 경로 도우미",
     id: `${basePath}/`,
     start_url: `${basePath}/`,

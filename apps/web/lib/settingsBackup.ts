@@ -322,7 +322,7 @@ export function createSettingsBackupFilename(now = new Date()): string {
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
-  return `weather-route-settings-${timestamp}.json`;
+  return `bigeutgi-settings-${timestamp}.json`;
 }
 
 export function exportSettingsBackup(

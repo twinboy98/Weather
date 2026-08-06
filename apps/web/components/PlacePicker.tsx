@@ -2,6 +2,14 @@
 
 import { type FormEvent, useRef, useState } from "react";
 
+import {
+  loadKakaoMaps,
+  type KakaoAddressDocument,
+  type KakaoCoordAddressDocument,
+  type KakaoMapsApi,
+  type KakaoPlaceDocument,
+} from "@/lib/kakaoMaps";
+
 export type PickedPlace = {
   label: string;
   address: string;
@@ -17,58 +25,6 @@ type PlacePickerProps = {
   onChange: (place: PickedPlace) => void;
 };
 
-type KakaoPlaceDocument = {
-  id: string;
-  place_name: string;
-  address_name: string;
-  road_address_name: string;
-  place_url?: string;
-  x: string;
-  y: string;
-};
-
-type KakaoAddressDocument = {
-  address_name: string;
-  x: string;
-  y: string;
-  address?: { address_name?: string };
-  road_address?: { address_name?: string } | null;
-};
-
-type KakaoCoordAddressDocument = {
-  address?: { address_name?: string };
-  road_address?: { address_name?: string } | null;
-};
-
-type KakaoMapsApi = {
-  load(callback: () => void): void;
-  services: {
-    Status: { OK: string; ZERO_RESULT: string; ERROR: string };
-    Places: new () => {
-      keywordSearch(
-        keyword: string,
-        callback: (result: KakaoPlaceDocument[], status: string) => void,
-        options?: { size?: number },
-      ): void;
-    };
-    Geocoder: new () => {
-      addressSearch(
-        address: string,
-        callback: (result: KakaoAddressDocument[], status: string) => void,
-      ): void;
-      coord2Address(
-        longitude: number,
-        latitude: number,
-        callback: (result: KakaoCoordAddressDocument[], status: string) => void,
-      ): void;
-    };
-  };
-};
-
-type KakaoWindow = Window & {
-  kakao?: { maps?: KakaoMapsApi };
-};
-
 type SearchResult = {
   id: string;
   name: string;
@@ -76,65 +32,6 @@ type SearchResult = {
   latitude: number;
   longitude: number;
 };
-
-let loaderPromise: Promise<KakaoMapsApi> | null = null;
-let loaderKey = "";
-
-function loadKakaoMaps(appKey: string): Promise<KakaoMapsApi> {
-  const kakaoWindow = window as KakaoWindow;
-  if (loaderKey && loaderKey !== appKey) {
-    return Promise.reject(
-      new Error(
-        "카카오 JavaScript 키를 바꿨습니다. 설정을 저장한 뒤 페이지를 새로고침해 주세요.",
-      ),
-    );
-  }
-  if (kakaoWindow.kakao?.maps?.services) {
-    loaderKey = appKey;
-    return Promise.resolve(kakaoWindow.kakao.maps);
-  }
-  if (loaderPromise && loaderKey === appKey) return loaderPromise;
-
-  loaderKey = appKey;
-  loaderPromise = new Promise((resolve, reject) => {
-    const fail = (message: string) => {
-      loaderPromise = null;
-      if (loaderKey === appKey) loaderKey = "";
-      reject(new Error(message));
-    };
-    const script = document.createElement("script");
-    const params = new URLSearchParams({
-      appkey: appKey,
-      libraries: "services",
-      autoload: "false",
-    });
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?${params.toString()}`;
-    script.async = true;
-    script.dataset.weatherRouteKakao = "true";
-    script.onload = () => {
-      const maps = (window as KakaoWindow).kakao?.maps;
-      if (!maps) {
-        fail(
-          "카카오맵 인증에 실패했습니다. JavaScript 키와 허용 도메인을 확인해 주세요.",
-        );
-        return;
-      }
-      maps.load(() => {
-        if (!maps.services) {
-          fail("카카오맵 장소 검색 서비스를 초기화하지 못했습니다.");
-          return;
-        }
-        resolve(maps);
-      });
-    };
-    script.onerror = () =>
-      fail(
-        "카카오맵 스크립트를 불러오지 못했습니다. 키·도메인·네트워크를 확인해 주세요.",
-      );
-    document.head.appendChild(script);
-  });
-  return loaderPromise;
-}
 
 function searchKeyword(
   maps: KakaoMapsApi,

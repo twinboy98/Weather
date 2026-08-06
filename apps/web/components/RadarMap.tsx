@@ -55,7 +55,7 @@ export function RadarMap({ home, work }: RadarMapProps) {
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="inline-flex rounded-xl bg-slate-100 p-1" aria-label="레이더 중심 위치">
           {([
             ["route", "경로"],
@@ -78,16 +78,13 @@ export function RadarMap({ home, work }: RadarMapProps) {
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
         <iframe
           allowFullScreen
-          className="h-[22rem] w-full border-0 sm:h-[28rem]"
+          className="h-[16rem] w-full border-0 sm:h-[18rem]"
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"
           src={url}
           title={`${center.label}의 Windy 현재 강수 레이더`}
         />
       </div>
-      <p className="mt-3 text-xs leading-5 text-slate-500">
-        지도는 과거·현재 레이더를 시각적으로 확인하는 용도입니다. 미래 강수 판단은 위의 선택 공급자 예보 타임라인을 사용합니다.
-      </p>
     </div>
   );
 }

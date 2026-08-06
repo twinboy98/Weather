@@ -36,10 +36,10 @@ export function CommuteAdvice({ direction, recommendation }: CommuteAdviceProps)
 
   if (!best) {
     return (
-      <article className={`relative overflow-hidden rounded-[1.6rem] p-6 text-white ${accent}`}>
+      <article className={`relative overflow-hidden rounded-2xl p-4 text-white ${accent}`}>
         <p className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-white/60">{label}</p>
-        <h2 className="mt-3 text-2xl font-black">{koreanLabel} 추천 준비 중</h2>
-        <p className="mt-2 max-w-md text-sm leading-6 text-white/70">{recommendation.summary}</p>
+        <h2 className="mt-2 text-xl font-black">{koreanLabel} 추천 준비 중</h2>
+        <p className="mt-2 max-w-md text-xs leading-5 text-white/70">{recommendation.summary}</p>
       </article>
     );
   }
@@ -48,7 +48,7 @@ export function CommuteAdvice({ direction, recommendation }: CommuteAdviceProps)
   const scoreTone = best.score >= 80 ? "bg-emerald-300 text-emerald-950" : best.score >= 60 ? "bg-amber-300 text-amber-950" : "bg-rose-300 text-rose-950";
 
   return (
-    <article className={`relative overflow-hidden rounded-[1.6rem] p-6 text-white shadow-xl ${accent}`}>
+    <article className={`relative overflow-hidden rounded-2xl p-4 text-white shadow-lg ${accent}`}>
       <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/5" aria-hidden />
       <div className="relative">
         <div className="flex items-center justify-between gap-3">
@@ -59,8 +59,8 @@ export function CommuteAdvice({ direction, recommendation }: CommuteAdviceProps)
           <span className={`rounded-full px-3 py-1.5 text-xs font-black ${scoreTone}`}>{best.score}점</span>
         </div>
 
-        <div className="mt-6">
-          <p className="text-4xl font-black tracking-[-0.06em] sm:text-5xl">
+        <div className="mt-3">
+          <p className="text-3xl font-black tracking-[-0.06em] sm:text-4xl">
             {window ? `${time(window.startAt)}–${time(window.endAt)}` : time(best.departureAt)}
           </p>
           <p className="mt-2 text-sm font-bold text-white/70">
@@ -68,22 +68,22 @@ export function CommuteAdvice({ direction, recommendation }: CommuteAdviceProps)
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-white/10 p-3">
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="rounded-xl bg-white/10 p-2">
             <p className="text-[0.62rem] font-bold text-white/50">예상 비 노출</p>
             <p className="mt-1 text-sm font-black">{metric(best.metrics.expectedWetnessMm, " mm", 2)}</p>
           </div>
-          <div className="rounded-xl bg-white/10 p-3">
+          <div className="rounded-xl bg-white/10 p-2">
             <p className="text-[0.62rem] font-bold text-white/50">최대 강수확률</p>
             <p className="mt-1 text-sm font-black">{best.metrics.maximumPrecipitationProbability === null ? "정보 없음" : `${Math.round(best.metrics.maximumPrecipitationProbability * 100)}%`}</p>
           </div>
-          <div className="rounded-xl bg-white/10 p-3">
+          <div className="rounded-xl bg-white/10 p-2">
             <p className="text-[0.62rem] font-bold text-white/50">신뢰도</p>
             <p className="mt-1 text-sm font-black">{Math.round(best.confidence * 100)}%</p>
           </div>
         </div>
 
-        <p className="mt-5 border-t border-white/10 pt-4 text-xs leading-5 text-white/65">
+        <p className="mt-3 line-clamp-2 border-t border-white/10 pt-3 text-[0.68rem] leading-4 text-white/65">
           {best.reasons[0] ?? recommendation.reasons[0] ?? recommendation.summary}
         </p>
       </div>

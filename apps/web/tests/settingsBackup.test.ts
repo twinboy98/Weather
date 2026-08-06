@@ -80,7 +80,7 @@ describe("settings backup export", () => {
     const document = JSON.parse(result.json);
 
     expect(result.filename).toBe(
-      "weather-route-settings-20260806T010203Z.json",
+      "bigeutgi-settings-20260806T010203Z.json",
     );
     expect(document).toMatchObject({
       version: SETTINGS_BACKUP_VERSION,
@@ -104,7 +104,7 @@ describe("settings backup export", () => {
   it("generates deterministic filenames and rejects invalid dates", () => {
     expect(
       createSettingsBackupFilename(new Date("2026-12-31T23:59:58.999Z")),
-    ).toBe("weather-route-settings-20261231T235958Z.json");
+    ).toBe("bigeutgi-settings-20261231T235958Z.json");
     expect(() => createSettingsBackupFilename(new Date(Number.NaN))).toThrow(
       SettingsBackupValidationError,
     );

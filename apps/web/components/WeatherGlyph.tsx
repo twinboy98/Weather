@@ -1,9 +1,10 @@
 type WeatherGlyphProps = {
   condition?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 };
 
 const sizeClass = {
+  xs: "h-7 w-7 text-base",
   sm: "h-9 w-9 text-xl",
   md: "h-12 w-12 text-2xl",
   lg: "h-20 w-20 text-4xl"

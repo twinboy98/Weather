@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CommuteAdvice } from "@/components/CommuteAdvice";
+import { KakaoCommuteMap } from "@/components/KakaoCommuteMap";
 import { LocationWeatherCard } from "@/components/LocationWeatherCard";
 import { RainWindowPanel } from "@/components/RainWindowPanel";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
@@ -27,21 +28,6 @@ const providers: Array<{ id: ProviderId; label: string }> = [
 
 function cloneClientState(state: ClientState): ClientState {
   return JSON.parse(JSON.stringify(state)) as ClientState;
-}
-
-function kakaoRouteUrl(state: ClientState): string | undefined {
-  const home = state.settings.places.home;
-  const work = state.settings.places.work;
-  if (!home || !work) return undefined;
-  const travelMode = {
-    driving: "car",
-    transit: "traffic",
-    walking: "walk",
-    bicycling: "bicycle",
-  }[state.settings.travelMode];
-  const origin = `${encodeURIComponent(home.address || home.name)},${home.latitude},${home.longitude}`;
-  const destination = `${encodeURIComponent(work.address || work.name)},${work.latitude},${work.longitude}`;
-  return `https://map.kakao.com/link/by/${travelMode}/${origin}/${destination}`;
 }
 
 export function Dashboard() {
@@ -140,12 +126,17 @@ export function Dashboard() {
     [bundles, clientState.settings],
   );
   const providerInfo = getProviderInfo(clientState.settings.providerId);
-  const routeUrl = kakaoRouteUrl(clientState);
   const warnings = Array.from(
     new Set([
       ...(bundles.home?.warnings ?? []),
       ...(bundles.work?.warnings ?? []),
     ]),
+  );
+  const criticalWarnings = warnings.filter((warning) =>
+    warning.includes("실제 의사결정에 사용할 수 없습니다"),
+  );
+  const noticeWarnings = warnings.filter(
+    (warning) => !criticalWarnings.includes(warning),
   );
 
   function openSettings() {
@@ -169,30 +160,25 @@ export function Dashboard() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-[90rem] px-4 pb-16 pt-4 sm:px-7 lg:px-10">
+    <main className="mx-auto min-h-screen max-w-[90rem] px-3 pb-8 pt-3 sm:px-5 lg:px-7">
       <ServiceWorkerRegistration />
 
-      <header className="mb-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/70 bg-white/75 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-5">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/70 bg-white/80 px-3 py-2.5 shadow-sm backdrop-blur-xl sm:px-4">
         <div className="flex items-center gap-3">
           <span
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-900 text-lg text-white shadow-sm"
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-900 text-sm font-black text-white shadow-sm"
             aria-hidden
           >
-            ↗
+            비
           </span>
-          <div>
-            <p className="text-base font-black tracking-[-0.03em]">날씨길</p>
-            <p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-slate-500">
-              Weather Route
-            </p>
-          </div>
+          <h1 className="text-lg font-black tracking-[-0.045em]">비긋기</h1>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <label className="sr-only" htmlFor="provider">
             날씨 공급자
           </label>
           <select
-            className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-700"
+            className="h-9 max-w-[9.5rem] rounded-xl border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-700 sm:max-w-none"
             id="provider"
             onChange={(event) =>
               selectProvider(event.target.value as ProviderId)
@@ -207,7 +193,7 @@ export function Dashboard() {
           </select>
           <button
             aria-label="날씨 새로고침"
-            className="secondary-button h-10 min-h-0 px-3"
+            className="secondary-button h-9 min-h-0 px-3"
             disabled={refreshing}
             onClick={() => void refreshWeather()}
             type="button"
@@ -216,7 +202,7 @@ export function Dashboard() {
             <span className="hidden sm:inline">새로고침</span>
           </button>
           <button
-            className="primary-button h-10 min-h-0"
+            className="primary-button h-9 min-h-0 px-3"
             onClick={openSettings}
             type="button"
           >
@@ -225,42 +211,9 @@ export function Dashboard() {
         </div>
       </header>
 
-      <section className="mb-6 grid items-end gap-5 lg:grid-cols-[1fr_auto]">
-        <div>
-          <p className="eyebrow">Commute weather planner</p>
-          <h1 className="mt-2 max-w-4xl text-4xl font-black leading-[1.03] tracking-[-0.055em] sm:text-5xl lg:text-6xl">
-            집에서 회사까지,
-            <br className="hidden sm:block" /> 비를 피하는 시간을 찾습니다.
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            현재 날씨와 시간별 예보를 브라우저에서 계산해 출근과 퇴근에
-            상대적으로 쾌적한 시간대를 알려드립니다.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-          <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-xs shadow-sm">
-            <p className="font-extrabold text-slate-900">
-              <span className="status-dot mr-2" />
-              {providerInfo.label}
-            </p>
-            <p className="mt-1 text-slate-500">{providerInfo.description}</p>
-          </div>
-          {routeUrl && (
-            <a
-              className="secondary-button bg-white"
-              href={routeUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              카카오맵에서 경로 보기 ↗
-            </a>
-          )}
-        </div>
-      </section>
-
       {firstVisit && !settingsOpen && (
         <button
-          className="mb-5 w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-950"
+          className="mb-3 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-xs text-amber-950"
           onClick={openSettings}
           type="button"
         >
@@ -270,80 +223,78 @@ export function Dashboard() {
         </button>
       )}
 
-      {warnings.length > 0 && (
+      {criticalWarnings.length > 0 && (
         <div
-          className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-950"
-          role="status"
+          className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold leading-5 text-rose-950"
+          role="alert"
         >
-          {warnings.map((warning) => (
+          {criticalWarnings.map((warning) => (
             <p key={warning}>• {warning}</p>
           ))}
         </div>
       )}
 
-      <section
-        className="grid gap-4 lg:grid-cols-2"
-        aria-label="추천 출퇴근 시간"
-      >
-        <CommuteAdvice direction="outbound" recommendation={outbound} />
-        <CommuteAdvice direction="inbound" recommendation={inbound} />
-      </section>
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1.12fr)_minmax(22rem,0.88fr)]">
+        <div className="min-w-0 space-y-3">
+          <section
+            className="grid gap-3 md:grid-cols-2"
+            aria-label="추천 출퇴근 시간"
+          >
+            <CommuteAdvice direction="outbound" recommendation={outbound} />
+            <CommuteAdvice direction="inbound" recommendation={inbound} />
+          </section>
 
-      <section
-        className="mt-5 grid gap-5 lg:grid-cols-2"
-        aria-label="집과 회사 날씨"
-      >
-        <LocationWeatherCard
-          bundle={bundles.home}
-          error={errors.home}
-          kind="home"
-          loading={refreshing}
-        />
-        <LocationWeatherCard
-          bundle={bundles.work}
-          error={errors.work}
-          kind="work"
-          loading={refreshing}
-        />
-      </section>
+          <section
+            className="grid gap-3 md:grid-cols-2"
+            aria-label="집과 회사 날씨"
+          >
+            <LocationWeatherCard
+              bundle={bundles.home}
+              error={errors.home}
+              kind="home"
+              loading={refreshing}
+            />
+            <LocationWeatherCard
+              bundle={bundles.work}
+              error={errors.work}
+              kind="work"
+              loading={refreshing}
+            />
+          </section>
+        </div>
 
-      <div className="mt-5">
-        <RainWindowPanel
-          home={bundles.home}
-          inbound={inbound}
-          outbound={outbound}
-          work={bundles.work}
-        />
+        <div className="min-w-0 space-y-3">
+          <KakaoCommuteMap
+            appKey={clientState.api.kakaoMapsAppKey}
+            home={clientState.settings.places.home}
+            key={`commute-map:${Boolean(clientState.api.kakaoMapsAppKey)}:${clientState.settings.places.home?.latitude}:${clientState.settings.places.home?.longitude}:${clientState.settings.places.work?.latitude}:${clientState.settings.places.work?.longitude}`}
+            travelMode={clientState.settings.travelMode}
+            work={clientState.settings.places.work}
+          />
+          <RainWindowPanel
+            home={bundles.home}
+            inbound={inbound}
+            outbound={outbound}
+            work={bundles.work}
+          />
+        </div>
       </div>
 
-      <section className="mt-5 grid gap-4 md:grid-cols-3">
-        <article className="card p-5">
-          <p className="eyebrow">Local first</p>
-          <h2 className="mt-2 font-black">계산은 내 브라우저에서</h2>
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            추천 점수와 집·회사 설정은 서버 데이터베이스 없이 이 기기에서
-            처리됩니다.
-          </p>
-        </article>
-        <article className="card p-5">
-          <p className="eyebrow">How it works</p>
-          <h2 className="mt-2 font-black">비 · 체감온도 · 바람</h2>
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            허용 시간대를 10분 후보로 나누고 두 장소의 이동 중 노출과 예보
-            불확실성을 함께 점수화합니다.
-          </p>
-        </article>
-        <article className="card p-5">
-          <p className="eyebrow">Important</p>
-          <h2 className="mt-2 font-black">안전 판단용이 아닙니다</h2>
-          <p className="mt-2 text-xs leading-5 text-slate-500">
-            기상특보·재난 상황에서는 추천보다 기상청과 관계기관의 공식 안내를
-            우선하세요.
-          </p>
-        </article>
-      </section>
+      {noticeWarnings.length > 0 && (
+        <details className="mt-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-950">
+          <summary className="flex min-h-9 cursor-pointer items-center justify-between gap-3 px-4 py-2 font-extrabold">
+            <span>{providerInfo.label} 안내</span>
+            <span className="font-bold text-amber-800">{noticeWarnings.length}건</span>
+          </summary>
+          <div className="space-y-1 border-t border-amber-200 px-4 py-2.5 leading-5" role="status">
+            {noticeWarnings.map((warning) => (
+              <p key={warning}>• {warning}</p>
+            ))}
+          </div>
+        </details>
+      )}
 
-      <footer className="mt-8 flex flex-col gap-2 border-t border-slate-200 pt-5 text-[0.68rem] leading-5 text-slate-500 sm:flex-row sm:items-start sm:justify-between">
+      <footer className="mt-4 flex flex-col gap-1 border-t border-slate-200 pt-3 text-[0.65rem] leading-4 text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <p>
           {bundles.home?.attribution ?? providerInfo.attribution}
           {bundles.work?.attribution &&
@@ -351,10 +302,7 @@ export function Dashboard() {
             ? ` · ${bundles.work.attribution}`
             : ""}
         </p>
-        <p className="sm:text-right">
-          장소 검색 © Kakao · Rain radar © Windy · 정확한 집·회사 주소와 API
-          설정은 브라우저에만 저장
-        </p>
+        <p className="sm:text-right">지도·장소 검색 © Kakao · 레이더 © Windy</p>
       </footer>
 
       {settingsOpen && (

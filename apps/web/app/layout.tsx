@@ -9,9 +9,9 @@ const basePath = rawBasePath && rawBasePath !== "/"
   : "";
 
 export const metadata: Metadata = {
-  title: "날씨길 | Weather Route",
+  title: "비긋기",
   description: "집과 회사의 날씨, 강수 창, 이동하기 좋은 시간을 한눈에 확인하세요.",
-  applicationName: "날씨길 | Weather Route",
+  applicationName: "비긋기",
   manifest: `${basePath}/manifest.webmanifest`,
   icons: {
     icon: `${basePath}/icon.svg`,

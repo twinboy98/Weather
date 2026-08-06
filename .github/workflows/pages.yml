@@ -58,7 +58,7 @@ jobs:
         run: pnpm --dir apps/web lint
 
       - name: Type check
-        run: pnpm --dir apps/web exec tsc --noEmit
+        run: pnpm --dir apps/web typecheck
 
       - name: Build static site
         run: pnpm --dir apps/web build

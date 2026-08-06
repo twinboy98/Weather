@@ -1,28 +1,53 @@
 "use client";
 
-import { useEffect } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
-import type { CommuteDirection, PlaceKey, PlaceRef, ProviderId, TravelMode } from "@/lib/domain";
+import type {
+  CommuteDirection,
+  PlaceKey,
+  PlaceRef,
+  ProviderId,
+  TravelMode,
+} from "@/lib/domain";
 import type { ClientState } from "@/lib/storage";
 
 import { PlacePicker, type PickedPlace } from "@/components/PlacePicker";
+import { ProviderSetupGuide } from "@/components/ProviderSetupGuide";
+import { SettingsTransfer } from "@/components/SettingsTransfer";
 
 type SettingsPanelProps = {
   value: ClientState;
-  onChange: (state: ClientState) => void;
+  onChange: Dispatch<SetStateAction<ClientState>>;
   onClose: () => void;
   onReset: () => void;
   onSave: () => void;
 };
 
-const providerOptions: Array<{ id: ProviderId; label: string; note: string }> = [
-  { id: "met_norway", label: "MET Norway", note: "키 없이 시작 · 저트래픽 개인용" },
-  { id: "kma_forecast", label: "기상청 단기예보", note: "공공데이터포털 서비스 키 필요" },
-  { id: "windy", label: "Windy", note: "Point Forecast 키 필요" },
-  { id: "accuweather", label: "AccuWeather", note: "보안 프록시 URL 필요" },
-];
+const providerOptions: Array<{ id: ProviderId; label: string; note: string }> =
+  [
+    {
+      id: "met_norway",
+      label: "MET Norway",
+      note: "키 없이 시작 · 저트래픽 개인용",
+    },
+    {
+      id: "kma_forecast",
+      label: "기상청 단기예보",
+      note: "공공데이터포털 서비스 키 필요",
+    },
+    { id: "windy", label: "Windy", note: "Point Forecast 키 필요" },
+    { id: "accuweather", label: "AccuWeather", note: "보안 프록시 URL 필요" },
+  ];
 
-export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: SettingsPanelProps) {
+export function SettingsPanel({
+  value,
+  onChange,
+  onClose,
+  onReset,
+  onSave,
+}: SettingsPanelProps) {
+  const [placePickerRevision, setPlacePickerRevision] = useState(0);
+
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -40,16 +65,20 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
       longitude: picked.longitude,
       placeId: picked.placeId,
     };
-    onChange({
-      ...value,
+    onChange((current) => ({
+      ...current,
       settings: {
-        ...value.settings,
-        places: { ...value.settings.places, [key]: place },
+        ...current.settings,
+        places: { ...current.settings.places, [key]: place },
       },
-    });
+    }));
   }
 
-  function updateWindow(direction: CommuteDirection, field: "startLocalTime" | "endLocalTime" | "travelMinutes", rawValue: string) {
+  function updateWindow(
+    direction: CommuteDirection,
+    field: "startLocalTime" | "endLocalTime" | "travelMinutes",
+    rawValue: string,
+  ) {
     onChange({
       ...value,
       settings: {
@@ -58,7 +87,10 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
           ...value.settings.schedule,
           [direction]: {
             ...value.settings.schedule[direction],
-            [field]: field === "travelMinutes" ? Math.max(5, Number(rawValue)) : rawValue,
+            [field]:
+              field === "travelMinutes"
+                ? Math.max(5, Number(rawValue))
+                : rawValue,
           },
         },
       },
@@ -66,55 +98,176 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section aria-labelledby="settings-title" aria-modal="true" className="mx-auto max-w-3xl overflow-hidden rounded-[1.8rem] bg-white shadow-2xl" role="dialog">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-3 backdrop-blur-sm sm:p-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        aria-labelledby="settings-title"
+        aria-modal="true"
+        className="mx-auto max-w-3xl overflow-hidden rounded-[1.8rem] bg-white shadow-2xl"
+        role="dialog"
+      >
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
           <div>
             <p className="eyebrow">My commute</p>
-            <h2 className="mt-1 text-2xl font-black" id="settings-title">집·회사와 출퇴근 설정</h2>
+            <h2 className="mt-1 text-2xl font-black" id="settings-title">
+              집·회사와 출퇴근 설정
+            </h2>
           </div>
-          <button aria-label="설정 닫기" className="secondary-button h-10 min-h-0 w-10 p-0 text-xl" onClick={onClose} type="button">×</button>
+          <button
+            aria-label="설정 닫기"
+            className="secondary-button h-10 min-h-0 w-10 p-0 text-xl"
+            onClick={onClose}
+            type="button"
+          >
+            ×
+          </button>
         </header>
 
         <div className="space-y-7 px-5 py-6 sm:px-7">
           <section>
             <div className="mb-3 flex items-end justify-between gap-3">
               <div>
-                <h3 className="text-lg font-black">Google 지도 연결</h3>
-                <p className="mt-1 text-xs leading-5 text-slate-500">Places API (New)가 허용된 브라우저 키를 입력하세요.</p>
+                <h3 className="text-lg font-black">카카오맵 장소 검색</h3>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  카카오디벨로퍼스의 JavaScript 키를 사용합니다. REST API 키가
+                  아닙니다.
+                </p>
               </div>
-              <a className="text-xs font-extrabold text-emerald-800 underline underline-offset-4" href="https://developers.google.com/maps/documentation/javascript/place-autocomplete-new" rel="noreferrer" target="_blank">설정 안내 ↗</a>
+              <a
+                className="text-xs font-extrabold text-emerald-800 underline underline-offset-4"
+                href="https://apis.map.kakao.com/web/guide/"
+                rel="noreferrer"
+                target="_blank"
+              >
+                공식 가이드 ↗
+              </a>
             </div>
             <input
-              aria-label="Google Maps API 키"
+              aria-label="카카오맵 JavaScript 키"
               className="control"
-              onChange={(event) => onChange({ ...value, api: { ...value.api, googleMapsApiKey: event.target.value.trim() } })}
-              placeholder="Google Maps 브라우저 API 키"
+              onChange={(event) =>
+                onChange({
+                  ...value,
+                  api: {
+                    ...value.api,
+                    kakaoMapsAppKey: event.target.value.trim(),
+                  },
+                })
+              }
+              placeholder="카카오 JavaScript 키"
               type="password"
-              value={value.api.googleMapsApiKey}
+              value={value.api.kakaoMapsAppKey}
             />
-            <p className="mt-2 text-[0.68rem] leading-5 text-slate-500">키는 이 브라우저에만 저장됩니다. github.io 리퍼러와 Maps JavaScript·Places API로 사용 범위를 제한하세요.</p>
+            <p className="mt-2 text-[0.68rem] leading-5 text-slate-500">
+              키는 이 브라우저의 localStorage에 저장됩니다. 카카오에 등록한
+              도메인에서만 동작하도록 제한하세요.
+            </p>
+            <details className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-6 text-slate-700">
+              <summary className="cursor-pointer font-black text-slate-900">
+                처음부터 따라 하는 카카오맵 키 발급 방법
+              </summary>
+              <ol className="mt-3 list-decimal space-y-1 pl-5">
+                <li>
+                  <a
+                    className="font-extrabold text-emerald-800 underline underline-offset-4"
+                    href="https://developers.kakao.com/console/app"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    카카오디벨로퍼스 앱 관리 ↗
+                  </a>
+                  에 로그인하고 <strong>앱 추가하기</strong>로 이 웹앱용 앱을
+                  만듭니다.
+                </li>
+                <li>
+                  앱 관리에서 <strong>카카오맵 → 사용 설정</strong>을 열고
+                  상태를 ON으로 바꿉니다.
+                </li>
+                <li>
+                  <strong>앱 → 플랫폼 키 → JavaScript 키</strong>를 열어 키 값을
+                  복사합니다. REST API 키나 Admin 키를 복사하면 안 됩니다.
+                </li>
+                <li>
+                  같은 JavaScript 키 설정의{" "}
+                  <strong>JavaScript SDK 도메인</strong>에 배포용{" "}
+                  <code>https://twinboy98.github.io</code>를 등록합니다.{" "}
+                  <code>/Weather/</code>는 경로이므로 붙이지 않습니다.
+                </li>
+                <li>
+                  로컬 개발도 하려면 <code>http://localhost:3000</code>도
+                  등록합니다. 다른 포트에서 시험하면 그 origin도 추가하세요.
+                </li>
+                <li>
+                  저장 후 위 입력란에 JavaScript 키를 붙여 넣고 장소를
+                  검색합니다. 키를 교체했다면 이 창 아래의{" "}
+                  <strong>저장하고 새로고침</strong>을 누릅니다.
+                </li>
+              </ol>
+              <div className="mt-3 rounded-xl bg-amber-50 p-3 text-amber-950">
+                <strong>비용 확인:</strong> 2026년 7월 21일 이후 정책상 계정에서
+                카카오맵 API를 처음 활성화한 앱에 무료 쿼터가 적용되며, 추가
+                앱이나 쿼터 초과는 비즈월렛·유료 설정이 필요할 수 있습니다. 사용
+                전에 최신 쿼터를 확인하세요.
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                <a
+                  className="font-extrabold text-emerald-800 underline underline-offset-4"
+                  href="https://developers.kakao.com/docs/ko/app-setting/app"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  키·도메인 공식 문서 ↗
+                </a>
+                <a
+                  className="font-extrabold text-emerald-800 underline underline-offset-4"
+                  href="https://developers.kakao.com/docs/ko/getting-started/quota"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  쿼터·가격 확인 ↗
+                </a>
+              </div>
+            </details>
           </section>
 
           <section className="grid gap-3 md:grid-cols-2">
             {(["home", "work"] as const).map((key) => {
-              const fallback = key === "home"
-                ? { label: "집", address: "", latitude: 37.5133, longitude: 127.1001 }
-                : { label: "회사", address: "", latitude: 37.5716, longitude: 126.9769 };
+              const fallback =
+                key === "home"
+                  ? {
+                      label: "집",
+                      address: "",
+                      latitude: 37.5133,
+                      longitude: 127.1001,
+                    }
+                  : {
+                      label: "회사",
+                      address: "",
+                      latitude: 37.5716,
+                      longitude: 126.9769,
+                    };
               const place = value.settings.places[key];
               return (
                 <PlacePicker
-                  apiKey={value.api.googleMapsApiKey}
-                  key={key}
+                  appKey={value.api.kakaoMapsAppKey}
+                  key={`${key}:${placePickerRevision}`}
                   kind={key}
                   onChange={(picked) => updatePlace(key, picked)}
-                  value={place ? {
-                    label: place.name,
-                    address: place.address ?? place.name,
-                    latitude: place.latitude,
-                    longitude: place.longitude,
-                    placeId: place.placeId,
-                  } : fallback}
+                  value={
+                    place
+                      ? {
+                          label: place.name,
+                          address: place.address ?? place.name,
+                          latitude: place.latitude,
+                          longitude: place.longitude,
+                          placeId: place.placeId,
+                        }
+                      : fallback
+                  }
                 />
               );
             })}
@@ -122,18 +275,29 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
 
           <section>
             <h3 className="text-lg font-black">날씨 공급자</h3>
-            <p className="mt-1 text-xs leading-5 text-slate-500">비교하지 않고 선택한 한 곳의 예보만 추천 계산에 사용합니다.</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              비교하지 않고 선택한 한 곳의 예보만 추천 계산에 사용합니다.
+            </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {providerOptions.map((provider) => (
                 <button
                   aria-pressed={value.settings.providerId === provider.id}
                   className={`rounded-2xl border p-4 text-left transition ${value.settings.providerId === provider.id ? "border-emerald-700 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"}`}
                   key={provider.id}
-                  onClick={() => onChange({ ...value, settings: { ...value.settings, providerId: provider.id } })}
+                  onClick={() =>
+                    onChange({
+                      ...value,
+                      settings: { ...value.settings, providerId: provider.id },
+                    })
+                  }
                   type="button"
                 >
-                  <span className="block text-sm font-black">{provider.label}</span>
-                  <span className="mt-1 block text-[0.68rem] text-slate-500">{provider.note}</span>
+                  <span className="block text-sm font-black">
+                    {provider.label}
+                  </span>
+                  <span className="mt-1 block text-[0.68rem] text-slate-500">
+                    {provider.note}
+                  </span>
                 </button>
               ))}
             </div>
@@ -141,25 +305,79 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
             {value.settings.providerId === "kma_forecast" && (
               <label className="mt-3 block text-xs font-bold text-slate-600">
                 KMA 공공데이터포털 서비스 키
-                <input className="control mt-1" onChange={(event) => onChange({ ...value, api: { ...value.api, kmaServiceKey: event.target.value.trim() } })} placeholder="ServiceKey" type="password" value={value.api.kmaServiceKey} />
+                <input
+                  className="control mt-1"
+                  onChange={(event) =>
+                    onChange({
+                      ...value,
+                      api: {
+                        ...value.api,
+                        kmaServiceKey: event.target.value.trim(),
+                      },
+                    })
+                  }
+                  placeholder="ServiceKey"
+                  type="password"
+                  value={value.api.kmaServiceKey}
+                />
               </label>
             )}
             {value.settings.providerId === "windy" && (
               <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_8rem_9rem]">
                 <label className="text-xs font-bold text-slate-600">
                   Windy Point Forecast 키
-                  <input className="control mt-1" onChange={(event) => onChange({ ...value, api: { ...value.api, windyApiKey: event.target.value.trim() } })} placeholder="Point Forecast API key" type="password" value={value.api.windyApiKey} />
+                  <input
+                    className="control mt-1"
+                    onChange={(event) =>
+                      onChange({
+                        ...value,
+                        api: {
+                          ...value.api,
+                          windyApiKey: event.target.value.trim(),
+                        },
+                      })
+                    }
+                    placeholder="Point Forecast API key"
+                    type="password"
+                    value={value.api.windyApiKey}
+                  />
                 </label>
                 <label className="text-xs font-bold text-slate-600">
                   모델
-                  <select className="control mt-1" onChange={(event) => onChange({ ...value, api: { ...value.api, windyModel: event.target.value as "gfs" | "icon" } })} value={value.api.windyModel}>
+                  <select
+                    className="control mt-1"
+                    onChange={(event) =>
+                      onChange({
+                        ...value,
+                        api: {
+                          ...value.api,
+                          windyModel: event.target.value as "gfs" | "icon",
+                        },
+                      })
+                    }
+                    value={value.api.windyModel}
+                  >
                     <option value="gfs">GFS</option>
                     <option value="icon">ICON</option>
                   </select>
                 </label>
                 <label className="text-xs font-bold text-slate-600">
                   키 종류
-                  <select className="control mt-1" onChange={(event) => onChange({ ...value, api: { ...value.api, windyApiMode: event.target.value as "testing" | "professional" } })} value={value.api.windyApiMode}>
+                  <select
+                    className="control mt-1"
+                    onChange={(event) =>
+                      onChange({
+                        ...value,
+                        api: {
+                          ...value.api,
+                          windyApiMode: event.target.value as
+                            | "testing"
+                            | "professional",
+                        },
+                      })
+                    }
+                    value={value.api.windyApiMode}
+                  >
                     <option value="testing">Testing</option>
                     <option value="professional">Professional</option>
                   </select>
@@ -169,29 +387,114 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
             {value.settings.providerId === "accuweather" && (
               <label className="mt-3 block text-xs font-bold text-slate-600">
                 AccuWeather 보안 프록시 URL
-                <input className="control mt-1" onChange={(event) => onChange({ ...value, api: { ...value.api, accuweatherProxyUrl: event.target.value.trim() } })} placeholder="https://your-worker.example.com/weather" type="url" value={value.api.accuweatherProxyUrl} />
-                <span className="mt-2 block font-normal leading-5 text-slate-500">AccuWeather 공식 지침에 따라 API 키는 정적 페이지에 입력하지 않습니다.</span>
+                <input
+                  className="control mt-1"
+                  onChange={(event) =>
+                    onChange({
+                      ...value,
+                      api: {
+                        ...value.api,
+                        accuweatherProxyUrl: event.target.value.trim(),
+                      },
+                    })
+                  }
+                  placeholder="https://your-worker.example.com/weather"
+                  type="url"
+                  value={value.api.accuweatherProxyUrl}
+                />
+                <span className="mt-2 block font-normal leading-5 text-slate-500">
+                  AccuWeather 공식 지침에 따라 API 키는 정적 페이지에 입력하지
+                  않습니다.
+                </span>
               </label>
             )}
+            <div className="mt-3">
+              <ProviderSetupGuide providerId={value.settings.providerId} />
+            </div>
           </section>
 
           <section>
             <h3 className="text-lg font-black">출퇴근 시간</h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {(["outbound", "inbound"] as const).map((direction) => (
-                <fieldset className="rounded-2xl border border-slate-200 p-4" key={direction}>
-                  <legend className="px-1 text-sm font-black">{direction === "outbound" ? "출근 · Best time to go" : "퇴근 · Best time to leave"}</legend>
+                <fieldset
+                  className="rounded-2xl border border-slate-200 p-4"
+                  key={direction}
+                >
+                  <legend className="px-1 text-sm font-black">
+                    {direction === "outbound"
+                      ? "출근 · Best time to go"
+                      : "퇴근 · Best time to leave"}
+                  </legend>
                   <div className="mt-2 grid grid-cols-2 gap-2">
-                    <label className="text-xs font-bold text-slate-600">시작<input className="control mt-1" onChange={(event) => updateWindow(direction, "startLocalTime", event.target.value)} type="time" value={value.settings.schedule[direction].startLocalTime} /></label>
-                    <label className="text-xs font-bold text-slate-600">종료<input className="control mt-1" onChange={(event) => updateWindow(direction, "endLocalTime", event.target.value)} type="time" value={value.settings.schedule[direction].endLocalTime} /></label>
+                    <label className="text-xs font-bold text-slate-600">
+                      시작
+                      <input
+                        className="control mt-1"
+                        onChange={(event) =>
+                          updateWindow(
+                            direction,
+                            "startLocalTime",
+                            event.target.value,
+                          )
+                        }
+                        type="time"
+                        value={
+                          value.settings.schedule[direction].startLocalTime
+                        }
+                      />
+                    </label>
+                    <label className="text-xs font-bold text-slate-600">
+                      종료
+                      <input
+                        className="control mt-1"
+                        onChange={(event) =>
+                          updateWindow(
+                            direction,
+                            "endLocalTime",
+                            event.target.value,
+                          )
+                        }
+                        type="time"
+                        value={value.settings.schedule[direction].endLocalTime}
+                      />
+                    </label>
                   </div>
-                  <label className="mt-2 block text-xs font-bold text-slate-600">예상 이동시간 (분)<input className="control mt-1" max="240" min="5" onChange={(event) => updateWindow(direction, "travelMinutes", event.target.value)} type="number" value={value.settings.schedule[direction].travelMinutes} /></label>
+                  <label className="mt-2 block text-xs font-bold text-slate-600">
+                    예상 이동시간 (분)
+                    <input
+                      className="control mt-1"
+                      max="240"
+                      min="5"
+                      onChange={(event) =>
+                        updateWindow(
+                          direction,
+                          "travelMinutes",
+                          event.target.value,
+                        )
+                      }
+                      type="number"
+                      value={value.settings.schedule[direction].travelMinutes}
+                    />
+                  </label>
                 </fieldset>
               ))}
             </div>
             <label className="mt-3 block text-xs font-bold text-slate-600">
               이동수단
-              <select className="control mt-1" onChange={(event) => onChange({ ...value, settings: { ...value.settings, travelMode: event.target.value as TravelMode } })} value={value.settings.travelMode}>
+              <select
+                className="control mt-1"
+                onChange={(event) =>
+                  onChange({
+                    ...value,
+                    settings: {
+                      ...value.settings,
+                      travelMode: event.target.value as TravelMode,
+                    },
+                  })
+                }
+                value={value.settings.travelMode}
+              >
                 <option value="transit">대중교통</option>
                 <option value="driving">자동차</option>
                 <option value="walking">도보</option>
@@ -200,16 +503,43 @@ export function SettingsPanel({ value, onChange, onClose, onReset, onSave }: Set
             </label>
           </section>
 
+          <SettingsTransfer
+            onImport={(state) => {
+              onChange(state);
+              setPlacePickerRevision((revision) => revision + 1);
+            }}
+            value={value}
+          />
+
           <div className="rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">
-            집·회사·키·시간 설정은 이 브라우저의 localStorage에만 저장되며 저장소나 GitHub로 전송되지 않습니다. 날씨를 조회할 때 선택한 좌표와 IP는 해당 공급자에 전달될 수 있습니다.
+            집·회사·키·시간 설정은 이 브라우저의 localStorage에만 저장되며
+            저장소나 GitHub로 전송되지 않습니다. 날씨를 조회할 때 선택한 좌표와
+            IP는 해당 공급자에 전달될 수 있습니다.
           </div>
         </div>
 
         <footer className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-slate-100 bg-white/95 px-5 py-4 backdrop-blur sm:px-7">
-          <button className="text-xs font-bold text-slate-500 underline underline-offset-4" onClick={onReset} type="button">샘플 설정으로 초기화</button>
+          <button
+            className="text-xs font-bold text-slate-500 underline underline-offset-4"
+            onClick={() => {
+              onReset();
+              setPlacePickerRevision((revision) => revision + 1);
+            }}
+            type="button"
+          >
+            샘플 설정으로 초기화
+          </button>
           <div className="flex gap-2">
-            <button className="secondary-button" onClick={onClose} type="button">취소</button>
-            <button className="primary-button" onClick={onSave} type="button">저장하고 새로고침</button>
+            <button
+              className="secondary-button"
+              onClick={onClose}
+              type="button"
+            >
+              취소
+            </button>
+            <button className="primary-button" onClick={onSave} type="button">
+              저장하고 새로고침
+            </button>
           </div>
         </footer>
       </section>

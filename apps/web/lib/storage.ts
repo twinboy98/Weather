@@ -7,7 +7,7 @@ import {
 export type WindyModel = "gfs" | "icon";
 
 export interface ApiConfiguration {
-  googleMapsApiKey: string;
+  kakaoMapsAppKey: string;
   kmaServiceKey: string;
   windyApiKey: string;
   windyModel: WindyModel;
@@ -39,7 +39,7 @@ export const SAMPLE_WORK: PlaceRef = {
 };
 
 export const DEFAULT_API_CONFIGURATION: ApiConfiguration = {
-  googleMapsApiKey: "",
+  kakaoMapsAppKey: "",
   kmaServiceKey: "",
   windyApiKey: "",
   windyModel: "gfs",
@@ -68,6 +68,7 @@ export function loadClientState(): ClientState {
   try {
     const parsed = JSON.parse(raw) as Partial<ClientState>;
     const parsedSettings = parsed.settings ?? DEFAULT_CLIENT_STATE.settings;
+    const parsedApi = parsed.api as Partial<ApiConfiguration> | undefined;
     return {
       settings: {
         ...DEFAULT_CLIENT_STATE.settings,
@@ -96,8 +97,27 @@ export function loadClientState(): ClientState {
         },
       },
       api: {
-        ...DEFAULT_API_CONFIGURATION,
-        ...parsed.api,
+        kakaoMapsAppKey:
+          typeof parsedApi?.kakaoMapsAppKey === "string"
+            ? parsedApi.kakaoMapsAppKey
+            : "",
+        kmaServiceKey:
+          typeof parsedApi?.kmaServiceKey === "string"
+            ? parsedApi.kmaServiceKey
+            : "",
+        windyApiKey:
+          typeof parsedApi?.windyApiKey === "string"
+            ? parsedApi.windyApiKey
+            : "",
+        windyModel: parsedApi?.windyModel === "icon" ? "icon" : "gfs",
+        windyApiMode:
+          parsedApi?.windyApiMode === "professional"
+            ? "professional"
+            : "testing",
+        accuweatherProxyUrl:
+          typeof parsedApi?.accuweatherProxyUrl === "string"
+            ? parsedApi.accuweatherProxyUrl
+            : "",
       },
     };
   } catch {

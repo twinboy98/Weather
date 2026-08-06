@@ -1,41 +1,291 @@
-# Weather Route · 날씨길
+# 날씨길 (Weather Route)
 
-A browser-first commute weather planner. Set home and work with Google Maps, see current and hourly weather for both places, and get explainable **Best time to go / Best time to leave** windows.
+> 비가 올 것 같은 출근길, 지금 나갈지 20분 기다릴지 한눈에 판단하세요.
 
-The former provider-comparison dashboard is no longer part of the product. One selected weather provider powers the screen and recommendation at a time. User settings and commute scoring run locally in the browser.
+날씨길은 **집과 회사의 날씨를 따로 확인하고, 비·체감온도·바람을 함께 고려해 출근하기 좋은 시간과 퇴근하기 좋은 시간을 추천하는 웹 앱**입니다. 별도 프로그램을 설치하거나 Docker를 실행할 필요 없이 브라우저에서 바로 사용할 수 있습니다.
 
-See [README.ko.md](README.ko.md) for the complete Korean setup and deployment guide.
+**바로 사용하기: [https://twinboy98.github.io/Weather/](https://twinboy98.github.io/Weather/)**
 
-## Run locally
+## 어떤 것을 보여주나요?
+
+- 집과 회사의 현재 날씨 및 시간별 예보
+- 사용자가 정한 출근·퇴근 가능 시간 안의 `Best time to go` / `Best time to leave`
+- 앞으로 12시간 동안 비가 오는 구간을 보여주는 Rain window
+- Windy 기반 강수 레이더
+- 카카오맵 장소 검색으로 집과 회사 지정
+- MET Norway, 기상청 단기예보, Windy, AccuWeather 중 날씨 공급자 선택
+- 집·회사, 출퇴근 시간, API 설정을 파일로 백업하고 다른 브라우저로 가져오기
+
+추천 시간은 집과 회사 예보를 바탕으로 계산한 **생활 편의용 참고 정보**입니다. 실제 이동 경로의 교통량이나 도로 상황을 계산하지 않으며, 호우·태풍·대설 등 위험 기상에서는 기상청과 관계기관의 안내를 우선해 주세요.
+
+## 5분 만에 시작하기
+
+처음에는 API 키가 필요 없는 `MET Norway`로 화면을 익혀보는 것이 가장 쉽습니다.
+
+1. [날씨길](https://twinboy98.github.io/Weather/)을 엽니다.
+2. 오른쪽 위 **설정**을 누릅니다.
+3. 날씨 공급자로 **MET Norway**를 선택합니다.
+4. 집과 회사를 지정합니다.
+   - 카카오맵 JavaScript 키가 있다면 장소 이름이나 주소로 검색합니다.
+   - 아직 키가 없다면 현재 위치 또는 위도·경도를 직접 입력해도 됩니다.
+5. 출근·퇴근 가능 시간과 예상 이동시간을 입력합니다.
+6. **저장하고 새로고침**을 누릅니다.
+
+기본값에는 잠실과 광화문이 예시로 들어 있습니다. 먼저 추천 화면을 살펴본 뒤 내 장소로 바꿔도 됩니다.
+
+## 카카오맵 장소 검색 설정
+
+날씨길은 Google Maps 대신 **카카오 지도 JavaScript API의 `services` 장소 검색**을 사용합니다.
+
+카카오는 2026년 7월 21일부터 무료 쿼터 제공 방식을 변경했습니다. 개발자 계정에서 **카카오맵 API를 처음 활성화한 앱 하나에만 무료 쿼터가 제공**되며, 두 번째 활성화 앱부터 또는 무료 쿼터 초과 사용 시에는 비즈월렛 연결과 유료 API 설정이 필요할 수 있습니다. 앱 정보에 `카카오맵 무료 쿼터` 배지가 표시되는지 확인하고, 최신 한도와 요금은 [카카오맵 API 이용 정책](https://developers.kakao.com/docs/ko/kakaomap/common)에서 확인해 주세요.
+
+### 1. 앱과 JavaScript 키 만들기
+
+1. [Kakao Developers](https://developers.kakao.com/)에 카카오 계정으로 로그인합니다.
+2. **내 애플리케이션 → 애플리케이션 추가하기**에서 앱을 만듭니다.
+3. 만든 앱에서 **카카오맵 → 사용 설정 → 상태**를 `ON`으로 바꿉니다.
+4. **앱 설정 → 앱 → 플랫폼 키**로 이동합니다.
+5. 플랫폼 키 목록에서 **JavaScript 키**를 확인합니다.
+
+날씨길에 입력하는 것은 반드시 **JavaScript 키**입니다. REST API 키, 네이티브 앱 키, Admin 키는 장소 검색 입력란에서 동작하지 않습니다.
+
+### 2. 사용할 웹 도메인 등록하기
+
+같은 JavaScript 키의 설정에서 **JavaScript SDK 도메인**을 등록합니다.
+
+공개된 날씨길을 사용할 때:
+
+```text
+https://twinboy98.github.io
+```
+
+로컬 개발 화면도 사용할 때:
+
+```text
+http://localhost:3000
+```
+
+도메인에는 `/Weather/` 같은 경로를 붙이지 않습니다. 프로토콜(`http` 또는 `https`), 호스트, 포트가 일치해야 합니다. 다른 도메인에 직접 배포했다면 그 도메인도 별도로 등록해야 합니다.
+
+### 3. 날씨길에 키 입력하기
+
+1. 날씨길의 **설정 → 카카오맵 장소 검색**을 엽니다.
+2. 앞에서 확인한 JavaScript 키를 붙여 넣습니다.
+3. 집 또는 회사 검색창에 `광화문`, `판교역`, 도로명 주소처럼 검색어를 입력합니다.
+4. 검색 결과에서 정확한 장소를 선택합니다.
+5. **저장하고 새로고침**을 누릅니다.
+
+카카오의 전체 발급 절차와 도메인 등록 방식은 [카카오 지도 Web API 시작 가이드](https://apis.map.kakao.com/web/guide/)에서 확인할 수 있습니다.
+
+## 날씨 공급자 고르기
+
+날씨길은 여러 예보를 순위로 비교하지 않습니다. **설정에서 선택한 공급자 하나의 자료만** 화면과 추천 계산에 사용합니다.
+
+| 공급자 | 처음 시작하기 | 실제 사용 시 알아둘 점 |
+|---|---|---|
+| MET Norway | 키 없이 바로 사용 | 브라우저 직접 호출은 간단한 시험에 적합합니다. 안정적인 공개 운영에는 캐싱 프록시가 권장됩니다. |
+| 기상청 단기예보 | 공공데이터포털 서비스 키 필요 | 국내 격자 단기예보입니다. 브라우저에 키가 저장되므로 호출량과 키 노출에 주의하세요. |
+| Windy | Point Forecast API 키 필요 | 무료 Testing 자료는 일부 값이 변형되므로 실제 출퇴근 판단에 적합하지 않습니다. |
+| AccuWeather | 서버 측 프록시 URL 필요 | API 키를 정적 웹페이지에 넣을 수 없어 프록시를 직접 운영해야 합니다. |
+
+가볍게 개인적으로 써보려면 MET Norway, 국내 단기예보를 사용해보고 싶다면 기상청을 권합니다. Windy와 AccuWeather는 각 공급자의 이용 조건과 비용을 먼저 확인하세요.
+
+### MET Norway
+
+별도의 키를 발급받지 않아도 됩니다. 설정에서 **MET Norway**를 고르고 저장하면 됩니다.
+
+다만 MET Norway는 요청자를 식별하고 응답을 캐시하도록 요구합니다. 브라우저에서는 임의의 `User-Agent`를 지정할 수 없고 `localhost` 요청도 제한될 수 있어, 제공사의 [브라우저 호출 안내](https://developer.yr.no/doc/locationforecast/HowTO/)는 안정적인 운영에 서버 측 프록시를 권장합니다. 현재 앱의 직접 호출은 개인·저트래픽 사용을 위한 편의 기능으로 생각해 주세요.
+
+### 기상청 단기예보
+
+1. [공공데이터포털](https://www.data.go.kr/)에 로그인합니다.
+2. [기상청 단기예보 조회서비스](https://www.data.go.kr/data/15084084/openapi.do)를 엽니다.
+3. **활용신청**을 누르고 개발계정 신청을 완료합니다.
+4. 승인 후 **마이페이지 → OpenAPI → 개발계정**에서 인증키를 확인합니다.
+5. 일반 인증키의 **Decoding 키**를 복사하는 것을 권장합니다.
+6. 날씨길의 **설정 → 날씨 공급자 → 기상청 단기예보**에서 서비스 키를 입력하고 저장합니다.
+
+활용신청 직후에는 승인 정보가 게이트웨이에 반영되기까지 시간이 걸릴 수 있습니다. 키가 맞는데도 인증 오류가 나면 잠시 기다린 뒤 다시 시도해 주세요. 공개 페이지에서 키를 사용하면 방문자의 브라우저에 키가 보일 수 있으므로 호출량을 확인하고, 여러 사람이 쓰는 서비스라면 별도 프록시를 두는 편이 안전합니다.
+
+### Windy Point Forecast
+
+1. [Windy Point Forecast API](https://api.windy.com/point-forecast/)에 로그인합니다.
+2. [요금 및 키 발급 페이지](https://api.windy.com/point-forecast/pricing)에서 Testing 또는 Professional 키를 발급받습니다.
+3. 날씨길의 **설정 → Windy**에서 키를 입력합니다.
+4. 사용할 예보 모델(`GFS` 또는 `ICON`)과 키 종류를 선택하고 저장합니다.
+
+**Testing 키의 데이터는 일부 순서와 값이 의도적으로 변형됩니다.** 연결 시험에는 쓸 수 있지만 실제 출퇴근 추천 결과를 믿어서는 안 됩니다. 운영 목적이라면 Professional 이용 조건과 최신 가격을 확인해야 합니다.
+
+화면의 강수 레이더는 Windy의 임베드 지도를 사용합니다. 레이더 표시와 Point Forecast 예보 공급자 선택은 서로 다른 기능입니다.
+
+### AccuWeather
+
+AccuWeather는 브라우저 입력란에 API 키를 받지 않습니다. 공식 보안 지침도 클라이언트 코드에 키를 넣지 말고 서버 측 프록시를 사용하도록 안내합니다.
+
+1. [AccuWeather Developer](https://developer.accuweather.com/) 계정을 만들고 로그인합니다.
+2. 구독 페이지에서 필요한 상품을 선택하고 API 키를 발급받습니다.
+3. API 키를 환경변수로 보관하는 Cloudflare Worker, Vercel Function 등의 HTTPS 프록시를 준비합니다.
+4. 프록시가 호출 출처로 `https://twinboy98.github.io`를 허용하도록 CORS를 설정합니다.
+5. 날씨길의 **설정 → AccuWeather**에는 API 키가 아니라 프록시 URL만 입력합니다.
+
+날씨길은 프록시에 다음 쿼리를 붙여 `GET` 요청을 보냅니다.
+
+```text
+?lat=37.5665&lon=126.9780&language=ko-kr&hours=24
+```
+
+프록시는 좌표에 해당하는 위치를 조회한 뒤 현재 조건과 시간별 예보를 받아 다음 형태로 반환해야 합니다.
+
+```json
+{
+  "current": {},
+  "hourly": []
+}
+```
+
+`current`는 AccuWeather Current Conditions의 원본 객체 또는 배열, `hourly`는 Hourly Forecast 원본 배열입니다. `{ "data": { "current": ..., "hourly": ... } }` 형태도 허용됩니다. 자세한 키 보안 원칙은 [AccuWeather 인증 문서](https://developer.accuweather.com/documentation/authentication)를 확인하세요.
+
+## 설정 백업과 복원
+
+브라우저를 바꾸거나 사이트 데이터를 지우기 전에 설정을 JSON 파일로 백업할 수 있습니다.
+
+### 내보내기
+
+1. **설정**을 엽니다.
+2. 설정 백업 영역에서 **설정 내보내기**를 누릅니다.
+3. `weather-route-settings-YYYYMMDDTHHmmssZ.json` 형식으로 내려받은 파일을 본인만 접근할 수 있는 안전한 위치에 보관합니다.
+
+백업 파일의 기본 구조는 다음과 같습니다.
+
+```json
+{
+  "version": 1,
+  "exportedAt": "2026-08-06T00:00:00.000Z",
+  "state": {}
+}
+```
+
+### 가져오기
+
+1. **설정 → 설정 가져오기**를 누르고 날씨길에서 내보낸 JSON 파일을 선택합니다.
+2. 파일 형식과 버전 검사가 끝나면 현재 설정 화면의 값이 가져온 값으로 바뀝니다.
+3. 집·회사, 출퇴근 시간, 공급자 설정이 맞는지 확인합니다.
+4. **저장하고 새로고침**을 눌러야 브라우저 저장소에 최종 반영됩니다.
+
+가져오기는 현재 설정 초안을 덮어씁니다. 잘못된 파일이거나 지원하지 않는 버전이면 저장하지 않고 오류를 표시합니다.
+
+> **중요:** 내보낸 JSON에는 카카오 JavaScript 키, 기상청 키, Windy 키, 프록시 URL과 집·회사 좌표가 **암호화되지 않은 평문**으로 포함됩니다. GitHub에 커밋하거나 메신저·공개 클라우드 링크로 공유하지 마세요. 공용 PC에서는 내보내지 말고, 사용이 끝난 백업은 안전하게 삭제하세요. AccuWeather API 키 자체는 앱이 저장하지 않으므로 백업에도 포함되지 않습니다.
+
+## 브라우저에는 무엇이 저장되나요?
+
+날씨길에는 별도의 회원 계정이나 자체 데이터베이스가 없습니다. 다음 정보는 현재 브라우저의 `localStorage`에 저장됩니다.
+
+- 집·회사 이름, 주소와 좌표
+- 출근·퇴근 가능 시간, 예상 이동시간과 이동수단
+- 선택한 날씨 공급자
+- 카카오, 기상청, Windy 키와 AccuWeather 프록시 URL
+
+이 정보가 Weather 저장소나 별도의 날씨길 서버로 업로드되지는 않습니다. 다만 장소를 검색할 때 검색어가 카카오로 전달되고, 날씨를 조회할 때 집·회사 좌표와 네트워크 정보가 선택한 날씨 공급자에 전달됩니다. 강수 레이더를 열면 Windy 임베드 페이지와 통신합니다.
+
+정적 웹 앱에서는 브라우저용 키를 완전히 숨길 수 없습니다. 카카오 키는 허용 도메인을 제한하고, 기상청·Windy 키는 사용량을 점검하며, 유출이 의심되면 해당 공급자 콘솔에서 폐기 후 재발급하세요.
+
+## 로컬에서 실행하기
+
+필요한 환경은 Node.js 22와 pnpm 11입니다. Docker와 Python API는 새 웹 앱 실행에 필요하지 않습니다.
 
 ```powershell
+git clone https://github.com/twinboy98/Weather.git
+cd Weather
 pnpm install --frozen-lockfile
 pnpm --dir apps/web dev
 ```
 
-Open <http://localhost:3000>. Docker and the Python API are not required for the new static app.
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 엽니다. 카카오 장소 검색을 시험하려면 카카오 Developers의 JavaScript SDK 도메인에 `http://localhost:3000`을 등록해야 합니다.
 
-## Validate and export
+검사와 정적 빌드는 다음 명령으로 실행합니다.
 
 ```powershell
 pnpm --dir apps/web test
 pnpm --dir apps/web lint
-apps\web\node_modules\.bin\tsc.CMD --noEmit -p apps\web\tsconfig.json
+pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 ```
 
-The static site is generated in `apps/web/out`.
+정적 결과물은 `apps/web/out`에 생성됩니다.
 
-## Deploy to GitHub Pages
+## GitHub Pages에 배포하기
 
-Set **Settings → Pages → Source** to **GitHub Actions**, then push `main` or `master`. The workflow at `.github/workflows/pages.yml` builds and deploys the static export, including repository sub-path handling.
+이 저장소에는 `.github/workflows/pages.yml`이 포함되어 있습니다.
 
-## Provider model
+1. GitHub 저장소를 Public으로 만들거나 계정 플랜에서 비공개 Pages 사용이 가능한지 확인합니다.
+2. 저장소의 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 선택합니다.
+3. `main` 또는 `master` 브랜치에 push합니다.
+4. 저장소의 **Actions** 탭에서 `Deploy GitHub Pages` 작업이 성공했는지 확인합니다.
 
-- MET Norway: low-volume direct browser requests; a caching proxy is recommended for public production.
-- KMA Forecast: user-owned service key; a proxy is recommended for public production.
-- Windy: Point Forecast key; Testing data is modified and not production-ready.
-- AccuWeather: server-side proxy required. The browser never accepts an AccuWeather key.
-- Windy Embed: visual past/current radar only; future rain decisions use the selected provider timeline.
+워크플로가 저장소 이름을 읽어 Next.js의 base path를 자동으로 설정합니다. 예를 들어 저장소가 `Weather`라면 접속 경로는 다음과 같습니다.
 
-Legacy API, database, comparison, and Docker files remain only for historical reference and are not used by the GitHub Pages app.
+```text
+https://<GitHub-ID>.github.io/Weather/
+```
+
+저장소 이름의 대소문자까지 맞춰 접속하세요. 배포 직후에는 GitHub CDN에 반영되기까지 잠시 걸릴 수 있습니다.
+
+## 자주 생기는 문제
+
+### 카카오 장소 검색 결과가 나오지 않아요
+
+- JavaScript 키가 아닌 REST API 키를 넣지 않았는지 확인합니다.
+- JavaScript SDK 도메인에 `https://twinboy98.github.io`가 정확히 등록됐는지 확인합니다.
+- 로컬이라면 `http://localhost:3000`을 별도로 등록합니다.
+- 키를 저장한 뒤 페이지를 새로고침합니다.
+- 광고 차단이나 스크립트 차단 확장 프로그램을 잠시 끄고 다시 확인합니다.
+
+### 기상청에서 인증키 오류가 나요
+
+- 단기예보 조회서비스의 **활용신청과 승인 상태**를 확인합니다.
+- Decoding 키를 다시 복사해 앞뒤 공백 없이 입력합니다.
+- 방금 승인받았다면 잠시 후 다시 시도합니다.
+- 일일 호출량을 넘지 않았는지 공공데이터포털에서 확인합니다.
+
+### Windy 값이 이상해 보여요
+
+Testing 키는 실제 값을 일부 변형해 반환하는 것이 정상입니다. 실제 판단에는 Professional 자료 또는 다른 공급자를 사용하세요.
+
+### AccuWeather 프록시가 동작하지 않아요
+
+- 프록시 URL이 `https://`인지 확인합니다.
+- 브라우저 개발자 도구에서 CORS 오류가 있는지 확인합니다.
+- 프록시가 `lat`, `lon`, `language`, `hours` 쿼리를 받는지 확인합니다.
+- 응답의 `current`와 `hourly`가 올바른 JSON인지 확인합니다.
+- AccuWeather 키와 구독 호출량은 프록시 서버에서 확인합니다.
+
+### 설정 파일을 가져올 수 없어요
+
+- 날씨길에서 내보낸 JSON 파일인지 확인합니다.
+- `version`이 `1`인지 확인합니다.
+- 파일을 직접 수정했다면 원본 백업으로 다시 시도합니다.
+- 가져온 뒤에는 반드시 **저장하고 새로고침**을 누릅니다.
+
+### 배포했는데 이전 화면이 보여요
+
+서비스 워커와 브라우저 캐시 때문에 이전 정적 파일이 잠시 남을 수 있습니다. 먼저 `Ctrl+Shift+R`로 강력 새로고침하세요. 그래도 해결되지 않으면 설정을 내보낸 뒤 해당 사이트의 저장 데이터와 서비스 워커를 지우고 다시 접속합니다.
+
+### 레이더가 비어 있어요
+
+Windy 임베드를 차단하는 확장 프로그램이나 네트워크 정책이 없는지 확인합니다. 레이더는 선택한 날씨 공급자와 별도로 Windy에 연결됩니다.
+
+## 추천은 어떻게 계산되나요?
+
+- 사용자가 정한 출근·퇴근 가능 시간 안에서 10분 간격 후보를 만듭니다.
+- 출발지와 도착지의 강수량·강수확률, 체감온도, 풍속을 점수화합니다.
+- 예상 이동시간을 반영해 이동 중 날씨 노출을 근사합니다.
+- 자료 누락과 오래된 예보에는 불확실성 감점을 적용합니다.
+- 점수가 비슷한 연속 후보를 하나의 좋은 시간대로 묶어 지나친 분 단위 정밀도를 피합니다.
+
+집과 회사 사이 전체 경로를 따라 측정한 날씨가 아니며, 선택한 공급자의 예보 품질과 갱신 시각에 따라 추천 결과가 달라질 수 있습니다.
+
+## 참고: 이전 서버 코드
+
+`apps/api`, Docker Compose, 예보 비교·검증 코드는 이전 구현을 참고할 수 있도록 남아 있습니다. 현재 GitHub Pages 앱의 실행, 계산, 빌드, 배포에는 사용되지 않습니다.
+
+문제나 개선 아이디어가 있다면 [GitHub Issues](https://github.com/twinboy98/Weather/issues)에 남겨주세요.

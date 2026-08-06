@@ -6,7 +6,7 @@ export type WindyApiMode = "testing" | "professional";
 /**
  * Runtime configuration supplied by the user.
  *
- * Google Maps credentials live outside this weather-provider layer. AccuWeather
+ * Kakao Maps credentials live outside this weather-provider layer. AccuWeather
  * deliberately has no client API-key option: its official security guidance
  * requires browser applications to call a server-side proxy.
  */
@@ -40,4 +40,3 @@ export type ProviderInfo = {
   configuration: "none" | "api-key" | "proxy-url";
   browserMode: "direct" | "proxy";
 };
-

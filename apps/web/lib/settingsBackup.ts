@@ -291,6 +291,15 @@ function apiConfigurationAt(value: unknown, path: string): ApiConfiguration {
       allowEmpty: true,
       maxLength: 4_096,
     }),
+    // version 1 backups created before the KMA API Hub integration do not
+    // contain this field. Keep accepting them and initialize the new key.
+    kmaApiHubKey:
+      api.kmaApiHubKey === undefined
+        ? ""
+        : stringAt(api.kmaApiHubKey, `${path}.kmaApiHubKey`, {
+            allowEmpty: true,
+            maxLength: 4_096,
+          }),
     windyApiKey: stringAt(api.windyApiKey, `${path}.windyApiKey`, {
       allowEmpty: true,
       maxLength: 4_096,

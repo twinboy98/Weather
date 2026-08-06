@@ -79,8 +79,9 @@ export function SettingsTransfer({ value, onImport }: SettingsTransferProps) {
       </p>
       <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs leading-5 text-rose-950">
         <strong>보안 주의:</strong> 내보낸 JSON은 암호화되지 않으며
-        카카오·기상청·Windy 키와 프록시 URL, 집·회사 좌표를 그대로 포함합니다.
-        공개 저장소·메신저·공용 PC에 올리지 말고 개인 보관용으로만 사용하세요.
+        카카오·공공데이터포털·KMA API Hub·Windy 키와 프록시 URL, 집·회사 좌표를
+        그대로 포함합니다. 공개 저장소·메신저·공용 PC에 올리지 말고 개인
+        보관용으로만 사용하세요.
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         <button

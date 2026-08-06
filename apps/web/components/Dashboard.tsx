@@ -273,9 +273,12 @@ export function Dashboard() {
           />
           <RainWindowPanel
             home={bundles.home}
+            homePlace={clientState.settings.places.home ?? undefined}
             inbound={inbound}
             outbound={outbound}
+            radarApiHubKey={clientState.api.kmaApiHubKey}
             work={bundles.work}
+            workPlace={clientState.settings.places.work ?? undefined}
           />
         </div>
       </div>
@@ -284,9 +287,14 @@ export function Dashboard() {
         <details className="mt-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-950">
           <summary className="flex min-h-9 cursor-pointer items-center justify-between gap-3 px-4 py-2 font-extrabold">
             <span>{providerInfo.label} 안내</span>
-            <span className="font-bold text-amber-800">{noticeWarnings.length}건</span>
+            <span className="font-bold text-amber-800">
+              {noticeWarnings.length}건
+            </span>
           </summary>
-          <div className="space-y-1 border-t border-amber-200 px-4 py-2.5 leading-5" role="status">
+          <div
+            className="space-y-1 border-t border-amber-200 px-4 py-2.5 leading-5"
+            role="status"
+          >
             {noticeWarnings.map((warning) => (
               <p key={warning}>• {warning}</p>
             ))}
@@ -302,7 +310,9 @@ export function Dashboard() {
             ? ` · ${bundles.work.attribution}`
             : ""}
         </p>
-        <p className="sm:text-right">지도·장소 검색 © Kakao · 레이더 © Windy</p>
+        <p className="sm:text-right">
+          지도·장소 검색 © Kakao · 레이더·강수예측 © 기상청
+        </p>
       </footer>
 
       {settingsOpen && (

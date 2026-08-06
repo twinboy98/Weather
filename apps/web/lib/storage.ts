@@ -9,6 +9,7 @@ export type WindyModel = "gfs" | "icon";
 export interface ApiConfiguration {
   kakaoMapsAppKey: string;
   kmaServiceKey: string;
+  kmaApiHubKey: string;
   windyApiKey: string;
   windyModel: WindyModel;
   windyApiMode: "testing" | "professional";
@@ -41,6 +42,7 @@ export const SAMPLE_WORK: PlaceRef = {
 export const DEFAULT_API_CONFIGURATION: ApiConfiguration = {
   kakaoMapsAppKey: "",
   kmaServiceKey: "",
+  kmaApiHubKey: "",
   windyApiKey: "",
   windyModel: "gfs",
   windyApiMode: "testing",
@@ -104,6 +106,10 @@ export function loadClientState(): ClientState {
         kmaServiceKey:
           typeof parsedApi?.kmaServiceKey === "string"
             ? parsedApi.kmaServiceKey
+            : "",
+        kmaApiHubKey:
+          typeof parsedApi?.kmaApiHubKey === "string"
+            ? parsedApi.kmaApiHubKey
             : "",
         windyApiKey:
           typeof parsedApi?.windyApiKey === "string"

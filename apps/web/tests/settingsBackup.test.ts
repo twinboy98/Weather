@@ -56,6 +56,7 @@ function completeState(): ClientState {
     api: {
       kakaoMapsAppKey: " kakao-secret ",
       kmaServiceKey: " kma-secret ",
+      kmaApiHubKey: " kma-api-hub-secret ",
       windyApiKey: " windy-secret ",
       windyModel: "icon",
       windyApiMode: "professional",
@@ -79,9 +80,7 @@ describe("settings backup export", () => {
     );
     const document = JSON.parse(result.json);
 
-    expect(result.filename).toBe(
-      "bigeutgi-settings-20260806T010203Z.json",
-    );
+    expect(result.filename).toBe("bigeutgi-settings-20260806T010203Z.json");
     expect(document).toMatchObject({
       version: SETTINGS_BACKUP_VERSION,
       exportedAt: "2026-08-06T01:02:03.456Z",
@@ -94,6 +93,7 @@ describe("settings backup export", () => {
         api: {
           kakaoMapsAppKey: "kakao-secret",
           kmaServiceKey: "kma-secret",
+          kmaApiHubKey: "kma-api-hub-secret",
           windyApiKey: "windy-secret",
           accuweatherProxyUrl: "https://weather.example.test/proxy",
         },
@@ -119,6 +119,7 @@ describe("settings backup import", () => {
     expect(imported.api).toEqual({
       kakaoMapsAppKey: "kakao-secret",
       kmaServiceKey: "kma-secret",
+      kmaApiHubKey: "kma-api-hub-secret",
       windyApiKey: "windy-secret",
       windyModel: "icon",
       windyApiMode: "professional",
@@ -136,6 +137,16 @@ describe("settings backup import", () => {
 
     expect(imported).not.toHaveProperty("untrusted");
     expect(imported.settings).not.toHaveProperty("untrusted");
+  });
+
+  it("imports older version 1 backups without a KMA API Hub key", () => {
+    const document = exportedDocument();
+    const state = document.state as ClientState;
+    delete (state.api as Partial<ClientState["api"]>).kmaApiHubKey;
+
+    const imported = importSettingsBackup(JSON.stringify(document));
+
+    expect(imported.api.kmaApiHubKey).toBe("");
   });
 
   it.each([

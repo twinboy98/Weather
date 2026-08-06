@@ -414,6 +414,88 @@ export function SettingsPanel({
           </section>
 
           <section>
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-black">기상청 강수예측</h3>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  강수예측 패널은 선택한 날씨 공급자와 별개로 KMA API Hub 자료를
+                  사용합니다.
+                </p>
+              </div>
+              <a
+                className="shrink-0 text-xs font-extrabold text-emerald-800 underline underline-offset-4"
+                href="https://apihub.kma.go.kr/apiInfo.do"
+                rel="noreferrer"
+                target="_blank"
+              >
+                API Hub 안내 ↗
+              </a>
+            </div>
+            <label className="mt-3 block text-xs font-bold text-slate-600">
+              KMA API Hub 인증키 (authKey)
+              <input
+                aria-label="KMA API Hub 인증키"
+                className="control mt-1"
+                onChange={(event) =>
+                  onChange({
+                    ...value,
+                    api: {
+                      ...value.api,
+                      kmaApiHubKey: event.target.value.trim(),
+                    },
+                  })
+                }
+                placeholder="KMA API Hub authKey"
+                type="password"
+                value={value.api.kmaApiHubKey}
+              />
+            </label>
+            <p className="mt-2 text-[0.68rem] leading-5 text-slate-500">
+              공공데이터포털의 단기예보 서비스 키와는 별도로 발급되는 키입니다.
+              서버 데이터베이스 없이 이 브라우저의 localStorage에 저장되지만,
+              이미지를 받을 때 API Hub 요청에 포함되므로 개발자 도구의 네트워크
+              화면에서 보일 수 있습니다. 본인의 키만 사용하세요.
+            </p>
+            <details className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-6 text-slate-700">
+              <summary className="cursor-pointer font-black text-slate-900">
+                KMA API Hub 인증키 발급 방법
+              </summary>
+              <ol className="mt-3 list-decimal space-y-1 pl-5">
+                <li>
+                  <a
+                    className="font-extrabold text-emerald-800 underline underline-offset-4"
+                    href="https://apihub.kma.go.kr/"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    기상청 API Hub ↗
+                  </a>
+                  에 회원가입하고 로그인합니다.
+                </li>
+                <li>
+                  일반회원 가입은 포털에서 자동 승인됩니다. 로그인 후
+                  마이페이지에 표시되는 <strong>인증키(authKey)</strong>를
+                  복사합니다.
+                </li>
+                <li>
+                  API 목록에서 레이더·초단기예측 자료의 이용 조건을 확인합니다.
+                  공공데이터포털의 Decoding 서비스 키는 API Hub에서 동작하지
+                  않습니다.
+                </li>
+                <li>
+                  위 입력란에 붙여 넣은 뒤 <strong>저장하고 새로고침</strong>을
+                  누릅니다.
+                </li>
+              </ol>
+              <div className="mt-3 rounded-xl bg-amber-50 p-3 text-amber-950">
+                <strong>기본 이용 한도:</strong> 일반회원은 현재 안내 기준
+                무료로 하루 20,000건·5GB까지 이용할 수 있습니다. 운영 정책은
+                바뀔 수 있으므로 API Hub의 최신 안내를 함께 확인하세요.
+              </div>
+            </details>
+          </section>
+
+          <section>
             <h3 className="text-lg font-black">출퇴근 시간</h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {(["outbound", "inbound"] as const).map((direction) => (
@@ -512,9 +594,10 @@ export function SettingsPanel({
           />
 
           <div className="rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">
-            집·회사·키·시간 설정은 이 브라우저의 localStorage에만 저장되며
-            저장소나 GitHub로 전송되지 않습니다. 날씨를 조회할 때 선택한 좌표와
-            IP는 해당 공급자에 전달될 수 있습니다.
+            집·회사·키·시간 설정은 이 브라우저의 localStorage에 저장되며
+            저장소나 GitHub로 전송되지 않습니다. 장소·날씨·강수예측을 조회할
+            때는 필요한 키, 좌표와 네트워크 정보가 해당 공급자에 전달될 수
+            있습니다.
           </div>
         </div>
 
